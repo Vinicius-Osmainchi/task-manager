@@ -7,7 +7,7 @@ const MainBoard = ({ children }) => {
   const classes = {
     mainBoard: {
       display: 'flex',
-      minWidth: '98vw',
+      minWidth: '99vw',
       width: 'fit-content',
       margin: 1,
       py: 1,

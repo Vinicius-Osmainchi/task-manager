@@ -6,11 +6,15 @@ import DataColumn from './components/DataColumn';
 import TaskCard from './components/TaskCard';
 import NewTaskForm from './components/NewTaskForm';
 import EditForm from './components/EditForm';
-import { Button } from '@mui/material';
+import SwapForm from './components/SwapForm';
+import { Button, IconButton, Select } from '@mui/material';
+import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 
 function App() {
   const [newTaskVisible, setNewTaskVisible] = useState(false);
   const [editFormVisible, setEditFormVisible] = useState(false);
+  const [swapFormVisible, setSwapFormVisible] = useState(false);
+  const [swapData, setSwapData] = useState({});
   const [editedData, setEditedData] = useState({
     taskName: '',
     description: '',
@@ -24,54 +28,30 @@ function App() {
       title: 'New Tasks',
       background: '#FF6347',
       tasks: [
-        {
-          taskName: 'Nova tarefa',
-          description: 'Esta é uma nova tarefa',
-        },
-        {
-          taskName: 'Segunda nova tarefa',
-          description: 'Esta é a segunda nova tarefa',
-        },
       ],
     },
     {
       title: 'In Progress',
       background: '#FFD700',
       tasks: [
-        {
-          taskName: 'Nova tarefa',
-          description: 'Esta é uma nova tarefa',
-        },
-        {
-          taskName: 'Segunda nova tarefa',
-          description: 'Esta é a segunda nova tarefa',
-        },
       ],
     },
     {
       title: 'Done',
       background: '#006400',
       tasks: [
-        {
-          taskName: 'Nova tarefa',
-          description: 'Esta é uma nova tarefa',
-        },
-        {
-          taskName: 'Segunda nova tarefa',
-          description: 'Esta é a segunda nova tarefa',
-        },
       ],
     },
   ]);
 
   const dataHandler = (newTask) => {
-    const newData = data;
+    const newData = [...data];
     newData[0].tasks.push(newTask);
     setData([...newData]);
   };
 
   const deleteHandler = (index, columnIndex) => {
-    const newData = data;
+    const newData = [...data];
     newData[columnIndex].tasks.splice(index, 1);
     setData([...newData]);
   };
@@ -79,7 +59,7 @@ function App() {
   const moveUpHandler = (index, columnIndex) => {
     const tempArr = data[columnIndex].tasks;
     const tempItem = tempArr.splice(index, 1);
-    const newData = data;
+    const newData = [...data];
     tempArr.splice(index - 1, 0, tempItem[0]);
     newData[columnIndex].tasks = tempArr;
     setData([...newData]);
@@ -87,10 +67,31 @@ function App() {
   const moveDownHandler = (index, columnIndex) => {
     const tempArr = data[columnIndex].tasks;
     const tempItem = tempArr.splice(index, 1);
-    const newData = data;
+    const newData = [...data];
     tempArr.splice(index + 1, 0, tempItem[0]);
     newData[columnIndex].tasks = tempArr;
     setData([...newData]);
+  };
+
+  const swapHandler = (event, index, columnIndex) => {
+    setSwapFormVisible(event);
+    const newData = [...data];
+    const swapedTask = newData[columnIndex].tasks[index];
+    setSwapData({
+      taskIndex: index,
+      columnIndex,
+      swapedTask,
+    });
+  };
+
+  const swapDataHandler = (event) => {
+     for (let i = 0; i < data.length; i++) {
+      if (data[i].title == event) {
+        const newData = [...data];
+        newData[swapData.columnIndex].tasks.splice([swapData.taskIndex], 1)
+        newData[i].tasks.push(swapData.swapedTask);
+      }
+    }
   };
 
   const editHandler = (event, index, columnIndex) => {
@@ -103,7 +104,7 @@ function App() {
   };
 
   const editedDataHandler = (editedTask) => {
-    const newData = data;
+    const newData = [...data];
     newData[indexes.columnIndex].tasks[indexes.taskIndex] = editedTask;
     setData([...newData]);
   };
@@ -118,6 +119,9 @@ function App() {
         >
           Add Task
         </Button>
+        {swapFormVisible ? (
+          <SwapForm data={data} onDataSubmit={swapDataHandler} onBackdropClick={(props) => setSwapFormVisible(props)} />
+        ) : null}
         {editFormVisible ? (
           <EditForm
             editedTask={editedData}
@@ -139,6 +143,7 @@ function App() {
                         onRaisePriority={moveUpHandler}
                         onDownPriority={moveDownHandler}
                         onEditTask={editHandler}
+                        onSwap={swapHandler}
                         key={index}
                         description={task.description}
                         taskName={task.taskName}
@@ -151,6 +156,9 @@ function App() {
                 );
               })
             : null}
+        <IconButton>
+              <AddCircleOutlineRoundedIcon fontSize='large'/>
+        </IconButton>
         </MainBoard>
       </ThemeToggle>
     </>
