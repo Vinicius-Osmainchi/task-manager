@@ -7,10 +7,12 @@ import TaskCard from './components/TaskCard';
 import NewTaskForm from './components/NewTaskForm';
 import EditForm from './components/EditForm';
 import SwapForm from './components/SwapForm';
-import { Button, IconButton, Select } from '@mui/material';
+import { Box, Button, IconButton, Select } from '@mui/material';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
+import NewColumnForm from './components/NewColumnForm';
 
 function App() {
+  const [newColumnVisible, setNewColumnVisible] = useState(false);
   const [newTaskVisible, setNewTaskVisible] = useState(false);
   const [editFormVisible, setEditFormVisible] = useState(false);
   const [swapFormVisible, setSwapFormVisible] = useState(false);
@@ -27,23 +29,29 @@ function App() {
     {
       title: 'New Tasks',
       background: '#FF6347',
-      tasks: [
-      ],
+      tasks: [],
     },
     {
       title: 'In Progress',
       background: '#FFD700',
-      tasks: [
-      ],
+      tasks: [],
     },
     {
       title: 'Done',
       background: '#006400',
-      tasks: [
-      ],
+      tasks: [],
     },
   ]);
 
+  const columnDataHandler = (e) => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    const newColumn = { title: e.newColumn, background: color, tasks: [] };
+    setData([...data, newColumn]);
+  };
   const dataHandler = (newTask) => {
     const newData = [...data];
     newData[0].tasks.push(newTask);
@@ -85,10 +93,10 @@ function App() {
   };
 
   const swapDataHandler = (event) => {
-     for (let i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
       if (data[i].title == event) {
         const newData = [...data];
-        newData[swapData.columnIndex].tasks.splice([swapData.taskIndex], 1)
+        newData[swapData.columnIndex].tasks.splice([swapData.taskIndex], 1);
         newData[i].tasks.push(swapData.swapedTask);
       }
     }
@@ -132,6 +140,9 @@ function App() {
         {newTaskVisible ? (
           <NewTaskForm onDataSubmit={dataHandler} onBackdropClick={(props) => setNewTaskVisible(props)} />
         ) : null}
+        {newColumnVisible ? (
+          <NewColumnForm onDataSubmit={columnDataHandler} onBackdropClick={(props) => setNewColumnVisible(props)} />
+        ) : null}
         <MainBoard>
           {data
             ? data.map((column, columnIndex) => {
@@ -156,9 +167,11 @@ function App() {
                 );
               })
             : null}
-        <IconButton>
-              <AddCircleOutlineRoundedIcon fontSize='large'/>
-        </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton sx={{ height: 50 }} onClick={() => setNewColumnVisible(true)}>
+              <AddCircleOutlineRoundedIcon fontSize="large" />
+            </IconButton>
+          </Box>
         </MainBoard>
       </ThemeToggle>
     </>

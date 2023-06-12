@@ -7,6 +7,7 @@ const MainBoard = ({ children }) => {
   const classes = {
     mainBoard: {
       display: 'flex',
+      justifyContent: 'center',
       minWidth: '99vw',
       width: 'fit-content',
       margin: 1,
