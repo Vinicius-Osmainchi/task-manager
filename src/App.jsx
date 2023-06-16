@@ -7,7 +7,7 @@ import TaskCard from './components/TaskCard';
 import NewTaskForm from './components/NewTaskForm';
 import EditForm from './components/EditForm';
 import SwapForm from './components/SwapForm';
-import { Box, Button, IconButton, Select } from '@mui/material';
+import { Box, Button, IconButton } from '@mui/material';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 import NewColumnForm from './components/NewColumnForm';
 
@@ -53,6 +53,7 @@ function App() {
     setData([...data, newColumn]);
   };
   const dataHandler = (newTask) => {
+    console.log(newTask)
     const newData = [...data];
     newData[0].tasks.push(newTask);
     setData([...newData]);
@@ -141,32 +142,35 @@ function App() {
           <NewTaskForm onDataSubmit={dataHandler} onBackdropClick={(props) => setNewTaskVisible(props)} />
         ) : null}
         {newColumnVisible ? (
-          <NewColumnForm onDataSubmit={columnDataHandler} onBackdropClick={(props) => setNewColumnVisible(props)} />
+          <NewColumnForm
+            appData={data}
+            onDataSubmit={columnDataHandler}
+            onBackdropClick={(props) => setNewColumnVisible(props)}
+          />
         ) : null}
         <MainBoard>
-          {data
-            ? data.map((column, columnIndex) => {
-                return (
-                  <DataColumn key={columnIndex} title={column.title} index={columnIndex} background={column.background}>
-                    {column.tasks.map((task, index) => (
-                      <TaskCard
-                        onDelete={deleteHandler}
-                        onRaisePriority={moveUpHandler}
-                        onDownPriority={moveDownHandler}
-                        onEditTask={editHandler}
-                        onSwap={swapHandler}
-                        key={index}
-                        description={task.description}
-                        taskName={task.taskName}
-                        index={index}
-                        columnIndex={columnIndex}
-                        dataLength={column.tasks.length}
-                      />
-                    ))}
-                  </DataColumn>
-                );
-              })
-            : null}
+          {data?.map((column, columnIndex) => {
+            return (
+              <DataColumn key={columnIndex} title={column.title} index={columnIndex} background={column.background}>
+                {column.tasks.map((task, index) => (
+                  <TaskCard
+                    onDelete={deleteHandler}
+                    onRaisePriority={moveUpHandler}
+                    onDownPriority={moveDownHandler}
+                    onEditTask={editHandler}
+                    onSwap={swapHandler}
+                    key={index}
+                    description={task.description}
+                    taskName={task.taskName}
+                    addedTime={task.addedTime}
+                    index={index}
+                    columnIndex={columnIndex}
+                    dataLength={column.tasks.length}
+                  />
+                ))}
+              </DataColumn>
+            );
+          })}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <IconButton sx={{ height: 50 }} onClick={() => setNewColumnVisible(true)}>
               <AddCircleOutlineRoundedIcon fontSize="large" />

@@ -2,6 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, TextField, Typography } f
 import React, { useState } from 'react';
 
 const NewColumnForm = (props) => {
+  const [existingTitle, setExistingTitle] = useState(false);
   const [data, setData] = useState({
     newColumn: '',
     title: '',
@@ -11,6 +12,7 @@ const NewColumnForm = (props) => {
   const dataHandler = (event) => {
     const { id, value } = event.target;
     setData({ ...data, [id]: value });
+    setExistingTitle(props.appData?.some((item) => item.title.toLowerCase() === value.toLowerCase()));
   };
 
   const backdropHandler = () => {
@@ -27,17 +29,7 @@ const NewColumnForm = (props) => {
     });
   };
 
-  const classes = {
-    newColumn: {
-      width: 350,
-      p: 2,
-    },
-    textField: {
-      width: 535,
-      m: 1,
-    },
-  };
-
+  
   return (
     <Dialog open onClose={backdropHandler}>
       <DialogContent>
@@ -47,15 +39,17 @@ const NewColumnForm = (props) => {
           </Typography>
           <TextField
             required
+            error={existingTitle}
+            helperText={existingTitle ? 'Column name already assigned.' : ''}
             onChange={dataHandler}
             value={data.newColumn}
-            sx={classes.newColumn}
+            sx={{ width: 350, m: 2 }}
             id="newColumn"
             label="New Column"
           />
 
           <DialogActions>
-            <Button type="submit" sx={{ width: 150, mx: 'auto', mb: 1 }} variant="contained">
+            <Button disabled={existingTitle} type="submit" sx={{ width: 150, mx: 'auto', mb: 1 }} variant="contained">
               ADD
             </Button>
           </DialogActions>

@@ -1,15 +1,23 @@
 import { Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const NewTaskForm = (props) => {
+
+  useEffect(() => {
+    const currentTime = new Date();
+    setAddedTime(currentTime);
+  }, []);
+
+  const [addedTime, setAddedTime] = useState(null);
   const [data, setData] = useState({
     taskName: '',
     description: '',
+    addedTime: '',
   });
-
+  
   const dataHandler = (event) => {
     const { id, value } = event.target;
-    setData({ ...data, [id]: value });
+    setData({ ...data, [id]: value, addedTime: addedTime });
   };
 
   const backdropHandler = () => {
@@ -27,11 +35,6 @@ const NewTaskForm = (props) => {
   };
 
   const classes = {
-    taskCard: {
-      width: 350,
-      height: 350,
-      p: 2,
-    },
     textField: {
       width: 535,
       m: 1,
@@ -51,7 +54,7 @@ const NewTaskForm = (props) => {
             value={data.taskName}
             sx={classes.textField}
             id="taskName"
-            label=" Task Name"
+            label="Task Name"
           />
           <TextField
             required
