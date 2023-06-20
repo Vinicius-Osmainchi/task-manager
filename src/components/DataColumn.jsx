@@ -2,9 +2,10 @@ import { Box, IconButton, Paper, Typography } from '@mui/material';
 import EditTwoToneIcon from '@mui/icons-material/EditTwoTone';
 import React from 'react';
 
-const DataColumn = ({ children, title, background }) => {
+const DataColumn = ({ children, title, background, index }) => {
+  
   const editColumnHandler = (event) => {
-    console.log(event.target);
+    console.log(title);
   };
 
   return (

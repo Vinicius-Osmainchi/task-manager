@@ -8,7 +8,7 @@ const MainBoard = ({ children }) => {
     mainBoard: {
       display: 'flex',
       justifyContent: 'center',
-      minWidth: '99vw',
+      minWidth: '98.8vw',
       width: 'fit-content',
       margin: 1,
       py: 1,
@@ -18,9 +18,7 @@ const MainBoard = ({ children }) => {
 
   return (
     <>
-      <Typography sx={{ my: 2,}} align="center" variant="h4">
-        Task Manager
-      </Typography>
+      
       <Paper elevation={3} sx={classes.mainBoard}>
         {children}
       </Paper>

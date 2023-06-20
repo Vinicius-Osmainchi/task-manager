@@ -1,4 +1,3 @@
-import './App.css';
 import { useState } from 'react';
 import ThemeToggle from './ui/ThemeToggle';
 import MainBoard from './components/MainBoard';
@@ -10,12 +9,14 @@ import SwapForm from './components/SwapForm';
 import { Box, Button, IconButton } from '@mui/material';
 import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 import NewColumnForm from './components/NewColumnForm';
+import Header from './components/Header';
 
 function App() {
   const [newColumnVisible, setNewColumnVisible] = useState(false);
   const [newTaskVisible, setNewTaskVisible] = useState(false);
   const [editFormVisible, setEditFormVisible] = useState(false);
   const [swapFormVisible, setSwapFormVisible] = useState(false);
+  const [theme, setTheme] = useState('dark');
   const [swapData, setSwapData] = useState({});
   const [editedData, setEditedData] = useState({
     taskName: '',
@@ -50,36 +51,46 @@ function App() {
       color += letters[Math.floor(Math.random() * 16)];
     }
     const newColumn = { title: e.newColumn, background: color, tasks: [] };
-    setData([...data, newColumn]);
-  };
-  const dataHandler = (newTask) => {
-    console.log(newTask)
-    const newData = [...data];
-    newData[0].tasks.push(newTask);
-    setData([...newData]);
+    setData((prevData) => [...prevData, newColumn]);
   };
 
-  const deleteHandler = (index, columnIndex) => {
-    const newData = [...data];
-    newData[columnIndex].tasks.splice(index, 1);
-    setData([...newData]);
+  const dataHandler = (newTask) => {
+    setData((prevData) => {
+      const newData = prevData.slice(0);
+      const newTasks = [...newData[0].tasks, newTask];
+      return [{ ...newData[0], tasks: newTasks }, ...newData.slice(1)];
+    });
+  };
+
+  const deleteHandler = (indexToRemove, columnIndex) => {
+    setData((prevData) => {
+      const newTasks = prevData[columnIndex].tasks.filter((_, i) => i !== indexToRemove);
+      const newColumn = { ...prevData[columnIndex], tasks: newTasks };
+      const filteredData = prevData.filter((_, i) => i !== columnIndex);
+      return [...filteredData.slice(0, columnIndex), newColumn, ...filteredData.slice(columnIndex)];
+    });
   };
 
   const moveUpHandler = (index, columnIndex) => {
-    const tempArr = data[columnIndex].tasks;
-    const tempItem = tempArr.splice(index, 1);
-    const newData = [...data];
-    tempArr.splice(index - 1, 0, tempItem[0]);
-    newData[columnIndex].tasks = tempArr;
-    setData([...newData]);
+    setData((prevData) => {
+      const tempArr = [...prevData[columnIndex].tasks];
+      const tempItem = tempArr.splice(index, 1);
+      const newData = [...prevData];
+      tempArr.splice(index - 1, 0, tempItem[0]);
+      newData[columnIndex] = { ...newData[columnIndex], tasks: tempArr };
+      return [...newData];
+    });
   };
+
   const moveDownHandler = (index, columnIndex) => {
-    const tempArr = data[columnIndex].tasks;
-    const tempItem = tempArr.splice(index, 1);
-    const newData = [...data];
-    tempArr.splice(index + 1, 0, tempItem[0]);
-    newData[columnIndex].tasks = tempArr;
-    setData([...newData]);
+    setData((prevData) => {
+      const tempArr = [...prevData[columnIndex].tasks];
+      const tempItem = tempArr.splice(index, 1);
+      const newData = [...prevData];
+      tempArr.splice(index + 1, 0, tempItem[0]);
+      newData[columnIndex] = { ...newData[columnIndex], tasks: tempArr };
+      return [...newData];
+    });
   };
 
   const swapHandler = (event, index, columnIndex) => {
@@ -94,13 +105,28 @@ function App() {
   };
 
   const swapDataHandler = (event) => {
-    for (let i = 0; i < data.length; i++) {
-      if (data[i].title == event) {
-        const newData = [...data];
-        newData[swapData.columnIndex].tasks.splice([swapData.taskIndex], 1);
-        newData[i].tasks.push(swapData.swapedTask);
-      }
-    }
+    setData((prevData) => {
+      const updatedData = prevData.map((item) => {
+        if (item.title === event) {
+          const tasks = [...item.tasks, swapData.swapedTask];
+          return { ...item, tasks };
+        }
+        return item;
+      });
+
+      const updatedColumnIndex = swapData.columnIndex;
+      const updatedTaskIndex = swapData.taskIndex;
+      const newData = updatedData.map((item, index) => {
+        if (index === updatedColumnIndex) {
+          const tasks = [...item.tasks];
+          tasks.splice(updatedTaskIndex, 1);
+          return { ...item, tasks };
+        }
+        return item;
+      });
+
+      return [...newData];
+    });
   };
 
   const editHandler = (event, index, columnIndex) => {
@@ -113,21 +139,26 @@ function App() {
   };
 
   const editedDataHandler = (editedTask) => {
-    const newData = [...data];
-    newData[indexes.columnIndex].tasks[indexes.taskIndex] = editedTask;
-    setData([...newData]);
+    const newData = data.map((column, columnIndex) => {
+      if (columnIndex === indexes.columnIndex) {
+        const tasks = column.tasks.map((task, taskIndex) => {
+          if (taskIndex === indexes.taskIndex) {
+            return editedTask;
+          }
+          return task;
+        });
+        return { ...column, tasks };
+      }
+      return column;
+    });
+
+    setData(newData);
   };
 
   return (
     <>
-      <ThemeToggle>
-        <Button
-          onClick={() => setNewTaskVisible(true)}
-          sx={{ mt: 2, ml: 20, background: '#DAA520', position: 'absolute' }}
-          variant="contained"
-        >
-          Add Task
-        </Button>
+      <ThemeToggle theme={theme}>
+        <Header onThemeChange={(e) => setTheme(e)} onAddNewTask={(e) => setNewTaskVisible(e)} />
         {swapFormVisible ? (
           <SwapForm data={data} onDataSubmit={swapDataHandler} onBackdropClick={(props) => setSwapFormVisible(props)} />
         ) : null}
