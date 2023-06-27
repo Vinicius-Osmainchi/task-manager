@@ -1,20 +1,23 @@
 import { Box, Button, FormControlLabel, Switch, Typography, styled } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { AppContext } from '../context/AppContext';
 
-const Header = (props) => {
+const Header = () => {
+  const { setTheme, setNewTaskVisible, theme } = useContext(AppContext);
+
   const [checked, setChecked] = useState(true);
 
   const switchHandler = () => {
     if (checked) {
-      props.onThemeChange('light');
+      setTheme('light');
       setChecked(false);
     } else {
-      props.onThemeChange('dark');
+      setTheme('dark');
       setChecked(true);
     }
   };
 
-  const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+  const MaterialUISwitch = styled(Switch)(() => ({
     width: 62,
     height: 34,
     padding: 7,
@@ -37,7 +40,7 @@ const Header = (props) => {
       },
     },
     '& .MuiSwitch-thumb': {
-      backgroundColor: theme === 'dark' ? '#003892' : '#001e3c',
+      backgroundColor: theme === 'dark' ? '#42a5f5' : '#001e3c',
       width: 32,
       height: 32,
       '&:before': {
@@ -56,30 +59,37 @@ const Header = (props) => {
     },
     '& .MuiSwitch-track': {
       opacity: 1,
-      backgroundColor: theme === 'dark' ? '#8796A5' : '#aab4be',
+      backgroundColor: theme === 'dark' ? '#8796A5' : '#bdbdbd',
       borderRadius: 20 / 2,
     },
   }));
 
+  const handleAddTask = () => {
+    setNewTaskVisible(true);
+  };
+
   return (
-    
-    <Box sx={{ display: 'flex', minWidth:"96vw", height:"70px"}}>
+    <Box sx={{ display: 'flex', minWidth: '96vw', height: '70px' }}>
       <FormControlLabel
-        sx={{ mt: 1.2, width:'230px' }}
+        sx={{ mt: 1.2, width: '230px' }}
         control={<MaterialUISwitch onChange={switchHandler} checked={checked} sx={{ m: 1 }} />}
         label="Color Mode"
       />
 
-      <Button onClick={() => props.onAddNewTask(true)} sx={{ mt: 2, mb: 1, background: '#DAA520', minWidth:'110px'}} variant="contained">
+      <Button
+        color="success"
+        onClick={handleAddTask}
+        sx={{ mt: 2, mb: 1, minWidth: '110px', fontWeight: 600 }}
+        variant="contained"
+      >
         Add Task
       </Button>
-    <Box sx={{width:"100%"}}>
-      <Typography variant="h4" sx={{ ml:-35, mt: 2 }} align="center">
-        Task Manager
-      </Typography>
+      <Box sx={{ width: '100%' }}>
+        <Typography variant="h4" sx={{ ml: -35, mt: 2, textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)' }} align="center">
+          Task Manager
+        </Typography>
       </Box>
     </Box>
-    
   );
 };
 

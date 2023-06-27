@@ -1,34 +1,36 @@
 import { Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../context/AppContext';
 
-const NewTaskForm = (props) => {
-
+const NewTaskForm = () => {
   useEffect(() => {
     const currentTime = new Date();
     setAddedTime(currentTime);
   }, []);
 
+  const { onBackdropClick, setData } = useContext(AppContext);
+
   const [addedTime, setAddedTime] = useState(null);
-  const [data, setData] = useState({
+  const [newTask, setNewTask] = useState({
     taskName: '',
     description: '',
     addedTime: '',
   });
-  
+
   const dataHandler = (event) => {
     const { id, value } = event.target;
-    setData({ ...data, [id]: value, addedTime: addedTime });
+    setNewTask({ ...newTask, [id]: value, addedTime: addedTime });
   };
 
-  const backdropHandler = () => {
-    props.onBackdropClick(false);
-  };
-
-  const submitHandler = (event) => {
+   const submitHandler = (event) => {
     event.preventDefault();
-    props.onDataSubmit(data);
-    backdropHandler();
-    setData({
+    setData((prevData) => {
+      const newData = prevData.slice(0);
+      const newTasks = [...newData[0].tasks, newTask];
+      return [{ ...newData[0], tasks: newTasks }, ...newData.slice(1)];
+    });
+    onBackdropClick();
+    setNewTask({
       taskName: '',
       description: '',
     });
@@ -42,7 +44,7 @@ const NewTaskForm = (props) => {
   };
 
   return (
-    <Dialog open onClose={backdropHandler}>
+    <Dialog open onClose={onBackdropClick}>
       <DialogContent>
         <form onSubmit={submitHandler}>
           <Typography align="center" variant="h4">
@@ -51,7 +53,7 @@ const NewTaskForm = (props) => {
           <TextField
             required
             onChange={dataHandler}
-            value={data.taskName}
+            value={newTask.taskName}
             sx={classes.textField}
             id="taskName"
             label="Task Name"
@@ -59,7 +61,7 @@ const NewTaskForm = (props) => {
           <TextField
             required
             onChange={dataHandler}
-            value={data.description}
+            value={newTask.description}
             sx={classes.textField}
             multiline
             minRows={3}

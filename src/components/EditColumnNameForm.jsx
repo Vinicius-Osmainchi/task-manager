@@ -1,51 +1,48 @@
 import { Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../context/AppContext';
 
 const EditColumnNameForm = () => {
-    const [existingTitle, setExistingTitle] = useState(false);
-  const [data, setData] = useState({
-    newColumn: '',
-    title: '',
-    tasks: '',
-  });
+  const { onBackdropClick, columnToBeEdited, setColumnToBeEdited, setData, data } = useContext(AppContext);
+
+  const [existingTitle, setExistingTitle] = useState(false);
 
   const dataHandler = (event) => {
-    const { id, value } = event.target;
-    setData({ ...data, [id]: value });
-    setExistingTitle(props.appData?.some((item) => item.title.toLowerCase() === value.toLowerCase()));
-  };
-
-  const backdropHandler = () => {
-    props.onBackdropClick(false);
+    const { value } = event.target;
+    setColumnToBeEdited({ ...columnToBeEdited, title: value });
+    console.log(columnToBeEdited);
+    setExistingTitle(data?.some((item) => item.title.toLowerCase() === value.toLowerCase()));
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onDataSubmit(data);
-    backdropHandler();
-    setData({
-      title: data.newColumn,
-      tasks: [],
+    const newData = data.map((column, columnIndex) => {
+      if (columnIndex === columnToBeEdited.index) {
+        const updatedColumn = { ...column, title: columnToBeEdited.title };
+        return updatedColumn;
+      }
+      return column;
     });
+    setData(newData);
+    onBackdropClick();
   };
 
-  
   return (
-    <Dialog open onClose={backdropHandler}>
+    <Dialog open onClose={onBackdropClick}>
       <DialogContent>
         <form onSubmit={submitHandler}>
           <Typography align="center" variant="h4">
-            Add New Column
+            Edit Column Name
           </Typography>
           <TextField
             required
             error={existingTitle}
             helperText={existingTitle ? 'Column name already assigned.' : ''}
             onChange={dataHandler}
-            value={data.newColumn}
+            value={columnToBeEdited.title}
             sx={{ width: 350, m: 2 }}
-            id="newColumn"
-            label="New Column"
+            id="title"
+            label="New Column Name"
           />
 
           <DialogActions>

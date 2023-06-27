@@ -1,48 +1,122 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Typography, CardContent, CardActions, Box } from '@mui/material';
+import React, { useContext } from 'react';
+import { Card, Typography, CardContent, CardActions, Box, Fab } from '@mui/material';
 import ArrowCircleUpTwoToneIcon from '@mui/icons-material/ArrowCircleUpTwoTone';
 import ArrowCircleDownTwoToneIcon from '@mui/icons-material/ArrowCircleDownTwoTone';
 import SwapHorizontalCircleTwoToneIcon from '@mui/icons-material/SwapHorizontalCircleTwoTone';
 import HighlightOffTwoToneIcon from '@mui/icons-material/HighlightOffTwoTone';
 import BuildCircleTwoToneIcon from '@mui/icons-material/BuildCircleTwoTone';
-import IconButton from '@mui/material/IconButton';
+import { AppContext } from '../context/AppContext';
+import { useDrag } from 'react-dnd';
 
 const TaskCard = (props) => {
- 
+  const { data, setData, setSwapFormVisible, setEditFormVisible, setEditedData, setSwapData, setIndexes } =
+    useContext(AppContext);
+
   const moveUpHandler = () => {
-    props.onRaisePriority(props.index, props.columnIndex);
-  };
-  const moveDownHandler = () => {
-    props.onDownPriority(props.index, props.columnIndex);
-  };
-  const swapHandler = () => {
-    props.onSwap(true, props.index, props.columnIndex);
-  };
-  const deleteHandler = () => {
-    props.onDelete(props.index, props.columnIndex);
-  };
-  const editHandler = () => {
-    props.onEditTask(true, props.index, props.columnIndex);
+    setData((prevData) => {
+      const tempArr = [...prevData[props.columnIndex].tasks];
+      const tempItem = tempArr.splice(props.index, 1);
+      const newData = [...prevData];
+      tempArr.splice(props.index - 1, 0, tempItem[0]);
+      newData[props.columnIndex] = { ...newData[props.columnIndex], tasks: tempArr };
+      return [...newData];
+    });
   };
 
+  const moveDownHandler = () => {
+    setData((prevData) => {
+      const tempArr = [...prevData[props.columnIndex].tasks];
+      const tempItem = tempArr.splice(props.index, 1);
+      const newData = [...prevData];
+      tempArr.splice(props.index + 1, 0, tempItem[0]);
+      newData[props.columnIndex] = { ...newData[props.columnIndex], tasks: tempArr };
+      return [...newData];
+    });
+  };
+
+  const swapHandler = () => {
+    setSwapFormVisible(true);
+    const newData = [...data];
+    const swapedTask = newData[props.columnIndex].tasks[props.index];
+    setSwapData({
+      taskIndex: props.index,
+      columnIndex: props.columnIndex,
+      swapedTask,
+    });
+  };
+
+  const deleteHandler = () => {
+    setData((prevData) => {
+      const newTasks = prevData[props.columnIndex].tasks.filter((_, i) => i !== props.index);
+      const newColumn = { ...prevData[props.columnIndex], tasks: newTasks };
+      const filteredData = prevData.filter((_, i) => i !== props.columnIndex);
+      return [...filteredData.slice(0, props.columnIndex), newColumn, ...filteredData.slice(props.columnIndex)];
+    });
+  };
+
+  const editHandler = () => {
+    setEditFormVisible(true);
+    setEditedData(data[props.columnIndex].tasks[props.index]);
+    setIndexes({
+      taskIndex: props.index,
+      columnIndex: props.columnIndex,
+    });
+  };
+
+  const [{ isDragging }, dragRef] = useDrag({
+    type: 'CARD',
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
   return (
-    <Card variant="outlined" sx={{ m: 1, minWidth: 200 }}>
-      <CardActions sx={{ p: 0, justifyContent: 'space-around' }}>
-        <IconButton id="moveUp" disabled={props.index === 0 ? true : false} onClick={moveUpHandler}>
+    <Card
+      ref={dragRef}
+      isDragging={isDragging}
+      variant="outlined"
+      sx={
+        !isDragging
+          ? { m: 1, my: 0, pt: 1, minWidth: 200, boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.6)', cursor: 'grab' }
+          : {
+              opacity: '50%',
+              m: 1,
+              my: 0,
+              pt: 1,
+              minWidth: 200,
+              boxShadow: '0px 0px 10px rgba(0, 0, 0, 0.6)',
+              cursor: 'grabbing',
+              border: '2px dashed black',
+            }
+      }
+    >
+      <CardActions sx={{ p: 0.5, justifyContent: 'space-around' }}>
+        <Fab
+          color="primary"
+          size="small"
+          id="moveUp"
+          disabled={props.index === 0 ? true : false}
+          onClick={moveUpHandler}
+        >
           <ArrowCircleUpTwoToneIcon />
-        </IconButton>
-        <IconButton disabled={props.index === props.dataLength - 1 ? true : false} onClick={moveDownHandler}>
+        </Fab>
+        <Fab
+          color="primary"
+          size="small"
+          disabled={props.index === props.dataLength - 1 ? true : false}
+          onClick={moveDownHandler}
+        >
           <ArrowCircleDownTwoToneIcon />
-        </IconButton>
-        <IconButton onClick={swapHandler}>
+        </Fab>
+        <Fab color="primary" size="small" onClick={swapHandler}>
           <SwapHorizontalCircleTwoToneIcon />
-        </IconButton>
-        <IconButton onClick={editHandler}>
+        </Fab>
+        <Fab color="primary" size="small" onClick={editHandler}>
           <BuildCircleTwoToneIcon />
-        </IconButton>
-        <IconButton onClick={deleteHandler}>
+        </Fab>
+        <Fab color="primary" size="small" onClick={deleteHandler}>
           <HighlightOffTwoToneIcon />
-        </IconButton>
+        </Fab>
       </CardActions>
       <CardContent sx={{ pt: 0 }}>
         <Typography sx={{ display: 'flex', justifyContent: 'flex-end', fontSize: 9, mb: -2.1 }}>{`#${
@@ -56,12 +130,12 @@ const TaskCard = (props) => {
           Task Description
         </Typography>
         <Typography variant="body2">{props.description ? props.description : null}</Typography>
-        <Box sx={{display: 'flex', justifyContent: 'space-between', mt:2, mb: -2}}>
-          <Typography color="text.secondary" sx={{ fontSize: 9}}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1, mb: -2 }}>
+          <Typography color="text.secondary" sx={{ fontSize: 9 }}>
             Time Added
           </Typography>
-          <Typography sx={{ fontSize: 9}}>
-          {props.addedTime.toDateString()} - {props.addedTime.toLocaleTimeString()}
+          <Typography sx={{ fontSize: 9 }}>
+            {props.addedTime.toDateString()} - {props.addedTime.toLocaleTimeString()}
           </Typography>
         </Box>
       </CardContent>

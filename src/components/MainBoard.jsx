@@ -1,9 +1,7 @@
 import React from 'react';
-import { Paper, Typography } from '@mui/material';
+import { Paper } from '@mui/material';
 
 const MainBoard = ({ children }) => {
-
-  
   const classes = {
     mainBoard: {
       display: 'flex',
@@ -17,12 +15,9 @@ const MainBoard = ({ children }) => {
   };
 
   return (
-    <>
-      
-      <Paper elevation={3} sx={classes.mainBoard}>
-        {children}
-      </Paper>
-    </>
+    <Paper elevation={3} sx={classes.mainBoard}>
+      {children}
+    </Paper>
   );
 };
 

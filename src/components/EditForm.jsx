@@ -1,34 +1,44 @@
 import { Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { AppContext } from '../context/AppContext';
 
-const EditForm = (props) => {
+const EditForm = () => {
+  const { onBackdropClick, editedData, data, setData, indexes} = useContext(AppContext);
 
   const [isFirstRender, setIsFirstRender] = useState(true)
-  const [data, setData] = useState({
+  const [editedTask, setEditedTask] = useState({
     taskName: '',
     description: '',
   });
 
   
   useEffect(() => {
-    isFirstRender ? setData(props.editedTask) : null;
+    isFirstRender ? setEditedTask(editedData) : null;
     setIsFirstRender(false);
-  }), [props.editedTask];
+  }), [editedData];
 
   const dataHandler = (event) => {
     const { id, value } = event.target;
-    setData({ ...data, [id]: value });
+    setEditedTask({ ...editedTask, [id]: value });
   };
 
-  const backdropHandler = () => {
-    props.onBackdropClick(false);
-  };
-
-  const submitHandler = (event) => {
+   const submitHandler = (event) => {
     event.preventDefault();
-    props.onDataSubmit(data, props.index, props.ColumnIndex);
-    backdropHandler();
-    setData({
+    const newData = data.map((column, columnIndex) => {
+      if (columnIndex === indexes.columnIndex) {
+        const tasks = column.tasks.map((task, taskIndex) => {
+          if (taskIndex === indexes.taskIndex) {
+            return editedTask;
+          }
+          return task;
+        });
+        return { ...column, tasks };
+      }
+      return column;
+    });
+    setData(newData);
+    onBackdropClick();
+    setEditedTask({
       taskName: '',
       description: '',
     });
@@ -47,7 +57,7 @@ const EditForm = (props) => {
   };
 
   return (
-    <Dialog open onClose={backdropHandler}>
+    <Dialog open onClose={onBackdropClick}>
       <DialogContent>
         <form onSubmit={submitHandler}>
           <Typography align="center" variant="h4">
@@ -56,7 +66,7 @@ const EditForm = (props) => {
           <TextField
             required
             onChange={dataHandler}
-            value={data.taskName}
+            value={editedTask.taskName}
             sx={classes.textField}
             id="taskName"
             label=" Task Name"
@@ -64,7 +74,7 @@ const EditForm = (props) => {
           <TextField
             required
             onChange={dataHandler}
-            value={data.description}
+            value={editedTask.description}
             sx={classes.textField}
             multiline
             minRows={3}

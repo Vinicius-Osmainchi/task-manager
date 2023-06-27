@@ -1,35 +1,43 @@
 import { Button, Dialog, DialogActions, DialogContent, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { AppContext } from '../context/AppContext';
 
 const NewColumnForm = (props) => {
+  const { onBackdropClick, setData, data } = useContext(AppContext);
   const [existingTitle, setExistingTitle] = useState(false);
-  const [data, setData] = useState({
-    newColumn: '',
+  const [columns, setColumns] = useState({
     title: '',
+    background: '',
     tasks: '',
   });
 
   const dataHandler = (event) => {
     const { id, value } = event.target;
-    setData({ ...data, [id]: value });
-    setExistingTitle(props.appData?.some((item) => item.title.toLowerCase() === value.toLowerCase()));
+    setColumns({ ...columns, [id]: value });
+    setExistingTitle(data?.some((item) => item.title.toLowerCase() === value.toLowerCase()));
   };
 
   const backdropHandler = () => {
-    props.onBackdropClick(false);
+    onBackdropClick();
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onDataSubmit(data);
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
     backdropHandler();
-    setData({
-      title: data.newColumn,
+    setColumns({
+      title: columns.title,
+      background: color,
       tasks: [],
     });
+    const newColumn = { title: columns.title, background: color, tasks: [] };
+    setData((prevData) => [...prevData, newColumn]);
   };
 
-  
   return (
     <Dialog open onClose={backdropHandler}>
       <DialogContent>
@@ -42,9 +50,9 @@ const NewColumnForm = (props) => {
             error={existingTitle}
             helperText={existingTitle ? 'Column name already assigned.' : ''}
             onChange={dataHandler}
-            value={data.newColumn}
+            value={columns.title}
             sx={{ width: 350, m: 2 }}
-            id="newColumn"
+            id="title"
             label="New Column"
           />
 
